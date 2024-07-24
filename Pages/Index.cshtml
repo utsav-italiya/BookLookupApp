@@ -1,0 +1,104 @@
+﻿@page
+@model BookLookupApp.Pages.IndexModel
+@{
+    ViewData["Title"] = "Book Lookup";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+</head>
+<body>
+    <div class="container">
+        <img src="https://app.bookconnect.ca/images/bci.png" alt="Book Connect Logo" class="logo" />
+
+        <h3 class="text-center mb-4">Find your book</h3>
+
+        <div class="form-container">
+            <form method="post" onsubmit="return handleSubmit()">
+                <div class="form-group">
+                    <label asp-for="ISBN" class="control-label">ISBN (International Standard Book Number)</label>
+                    <input asp-for="ISBN" class="form-control" placeholder="Enter ISBN" 
+                        maxlength="13" 
+                        pattern="\d{1,13}" 
+                        title="ISBN must be a number with up to 13 digits."
+                        oninput="hideAlert()" />
+                    <span asp-validation-for="ISBN" class="text-danger"></span>
+                </div>
+                <button type="submit" class="search-button">
+                    <span id="search-text">Search</span>
+                    <span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display:none;"></span>
+                </button>
+            </form>
+        </div>
+
+        @if (Model.Book != null)
+        {
+            <div class="book-details-container">
+                <div class="bcimage-container">
+                    <div class="text-center">
+                        <img src="@Model.Book.CoverImage" alt="Cover Image" class="book-cover-image img-fluid" />
+                    </div>
+                </div>
+                <div class="book-info-container">
+                    <p>Book information</p>
+                    <h2 class="book-name-title text-center">@Model.Book.Title</h2>
+                    <h4 class="book-name-subtitle text-center">@Model.Book.Subtitle</h4>
+                    <div class="price-container">
+                        <p><strong class="titles">Price:</strong> @Model.Book.Price.ToString("F2")$ (USD)</p>
+                        <p><strong class="titles">Description:</strong> @Model.Book.Description</p>
+                        <p><strong class="titles">Author(s):</strong> @string.Join(", ", Model.Book.Authors)</p>
+                        <p><strong class="titles">Subject:</strong> @Model.Book.Subject</p>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.ModelState.ErrorCount > 0)
+        {
+            <div class="alert alert-danger mt-4" id="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                @foreach (var error in Model.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <p><b>@error.ErrorMessage</b></p>
+                }
+            </div>
+        }
+    </div>
+
+    @section Scripts {
+        <script>
+            function hideAlert() {
+                var alert = document.getElementById('alert');
+                if (alert) {
+                    alert.style.display = 'none';
+                }
+            }
+
+            function handleSubmit() {
+                var isbnInput = document.querySelector('input[name="ISBN"]');
+                var isbn = isbnInput.value.trim();
+                var spinner = document.getElementById('spinner');
+                var searchText = document.getElementById('search-text');
+                var button = document.querySelector('.search-button');
+
+                if (!isbn || !/^\d{1,13}$/.test(isbn)) {
+                    return false;
+                }
+                if (searchText && spinner) {
+                    searchText.style.display = 'none';
+                    spinner.style.display = 'inline-block';
+                    button.disabled = true;
+                }
+                return true; 
+            }
+
+        </script>
+    }
+</body>
+</html>
